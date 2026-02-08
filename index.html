@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Reactions Bot - Fixed</title>
+    <title>Telegram Reactions Bot - Post Link</title>
     <style>
         * {
             margin: 0;
@@ -108,6 +108,13 @@
             font-size: 12px;
             color: #666;
             margin-top: 5px;
+        }
+
+        .input-example {
+            font-size: 11px;
+            color: #999;
+            margin-top: 3px;
+            font-family: monospace;
         }
 
         button {
@@ -328,6 +335,42 @@
             gap: 10px;
             cursor: pointer;
         }
+
+        .post-link-info {
+            background: #e7f3ff;
+            border: 2px dashed #0088cc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        .post-link-info h4 {
+            color: #0088cc;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .post-link-info ol {
+            margin-left: 20px;
+            color: #555;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .extracted-info {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .extracted-info p {
+            margin: 5px 0;
+            font-size: 13px;
+            color: #155724;
+        }
     </style>
 </head>
 <body>
@@ -335,13 +378,13 @@
         <!-- Header -->
         <div class="card">
             <h1>
-                ⭐ Telegram Reactions Bot (Fixed)
+                ⭐ Telegram Reactions Bot
                 <span id="statusBadge" class="status disconnected">Disconnected</span>
             </h1>
-            <p class="subtitle">Enhanced version with better error handling</p>
+            <p class="subtitle">Send reactions using post link - No message ID needed!</p>
 
             <div class="alert alert-warning">
-                ⚠️ <strong>Important:</strong> This tool simulates reactions by repeatedly calling the Telegram API. Due to browser limitations and Telegram rate limits, some errors are normal. The bot will continue working despite occasional errors.
+                ⚠️ <strong>Security:</strong> Your bot token is stored only in your browser. Never shared externally.
             </div>
 
             <div id="successMsg" class="alert alert-success"></div>
@@ -350,13 +393,12 @@
 
         <!-- Setup Guide -->
         <div class="card">
-            <h2 style="margin-bottom: 15px;">📋 Setup Instructions</h2>
+            <h2 style="margin-bottom: 15px;">📋 Quick Setup</h2>
             <div class="alert alert-info">
-                <strong>Step 1:</strong> Open Telegram, find <code>@BotFather</code>, send <code>/newbot</code><br>
-                <strong>Step 2:</strong> Follow instructions and copy your bot token<br>
-                <strong>Step 3:</strong> Add your bot to your channel as administrator with "Post Messages" permission<br>
-                <strong>Step 4:</strong> To get Message ID: Forward a post from your channel to <code>@userinfobot</code><br>
-                <strong>Step 5:</strong> Enter details below and connect
+                <strong>Step 1:</strong> Create bot with <code>@BotFather</code> on Telegram<br>
+                <strong>Step 2:</strong> Add bot to your channel as admin (enable "Post Messages")<br>
+                <strong>Step 3:</strong> Copy your post link (Right click post → Copy Link)<br>
+                <strong>Step 4:</strong> Paste below and start!
             </div>
         </div>
 
@@ -367,13 +409,13 @@
             <div class="form-group">
                 <label for="botToken">Bot Token *</label>
                 <input type="password" id="botToken" placeholder="1234567890:ABCdefGHIjklMNOpqrsTUVwxyz">
-                <div class="input-hint">From @BotFather</div>
+                <div class="input-hint">Get from @BotFather</div>
             </div>
 
             <div class="form-group">
                 <label for="channelId">Channel Username or ID *</label>
                 <input type="text" id="channelId" placeholder="@mychannel or -1001234567890">
-                <div class="input-hint">Channel username (with @) or numeric ID</div>
+                <div class="input-hint">Your channel username (with @) or numeric ID</div>
             </div>
 
             <button class="btn-primary" onclick="connectBot()">🔗 Connect Bot</button>
@@ -391,29 +433,47 @@
             <h2 style="margin-bottom: 20px;">🎯 Send Reactions</h2>
 
             <div class="method-select">
-                <h3 style="color: #333; margin-bottom: 15px; font-size: 16px;">Method</h3>
+                <h3 style="color: #333; margin-bottom: 15px; font-size: 16px;">Select Method</h3>
                 <div class="method-option">
                     <label>
-                        <input type="radio" name="method" value="views" checked>
-                        <strong>Boost Post Views</strong> - Sends messages to simulate engagement (Works best)
+                        <input type="radio" name="method" value="views" checked onchange="updateMethodUI()">
+                        <strong>Boost Engagement</strong> - Quick views boost (No post link needed)
                     </label>
                 </div>
                 <div class="method-option">
                     <label>
-                        <input type="radio" name="method" value="reactions">
-                        <strong>Direct Reactions</strong> - Attempts to send emoji reactions (May have limits)
+                        <input type="radio" name="method" value="reactions" onchange="updateMethodUI()">
+                        <strong>Direct Reactions</strong> - Send emoji reactions to specific post
                     </label>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="messageId">Message ID (Optional for views method)</label>
-                <input type="number" id="messageId" placeholder="123">
-                <div class="input-hint">Get from @userinfobot - Required only for reactions method</div>
+            <div class="form-group" id="postLinkGroup">
+                <label for="postLink">Post Public Link</label>
+                <input type="text" id="postLink" placeholder="https://t.me/yourchannel/123" oninput="extractMessageId()">
+                <div class="input-hint">Right-click your channel post and select "Copy Link"</div>
+                <div class="input-example">Example: https://t.me/mychannel/456 or https://t.me/c/1234567890/789</div>
+                
+                <div class="post-link-info">
+                    <h4>📌 How to get your post link:</h4>
+                    <ol>
+                        <li>Open your Telegram channel</li>
+                        <li>Find the post you want to boost</li>
+                        <li>Right-click (or long-press on mobile) on the post</li>
+                        <li>Select "Copy Link" or "Share" → "Copy Link"</li>
+                        <li>Paste the link above</li>
+                    </ol>
+                </div>
+
+                <div class="extracted-info" id="extractedInfo">
+                    <p><strong>✅ Link Detected!</strong></p>
+                    <p>Channel: <span id="extractedChannel"></span></p>
+                    <p>Message ID: <span id="extractedMsgId"></span></p>
+                </div>
             </div>
 
             <div class="form-group">
-                <label for="count">Number of Actions</label>
+                <label for="count">Number of Reactions</label>
                 <input type="number" id="count" value="1000" min="1" max="10000">
                 
                 <div class="quick-btns">
@@ -421,11 +481,12 @@
                     <button class="quick-btn" onclick="setCount(500)">500</button>
                     <button class="quick-btn" onclick="setCount(1000)">1K</button>
                     <button class="quick-btn" onclick="setCount(5000)">5K</button>
+                    <button class="quick-btn" onclick="setCount(10000)">10K</button>
                 </div>
             </div>
 
             <div class="form-group" id="reactionSelector">
-                <label>Reaction Type (for reactions method)</label>
+                <label>Reaction Type</label>
                 <div class="reaction-grid">
                     <button class="reaction-btn selected" onclick="selectReaction(this, '👍')">👍</button>
                     <button class="reaction-btn" onclick="selectReaction(this, '❤️')">❤️</button>
@@ -441,10 +502,10 @@
             <div class="form-group">
                 <label for="delay">Delay Between Actions (ms)</label>
                 <input type="number" id="delay" value="500" min="100" max="5000">
-                <div class="input-hint">Recommended: 500-1000ms to avoid rate limits</div>
+                <div class="input-hint">500-1000ms recommended to avoid rate limits</div>
             </div>
 
-            <button class="btn-success" id="startBtn" onclick="start()">🚀 Start</button>
+            <button class="btn-success" id="startBtn" onclick="start()">🚀 Start Reactions</button>
             <button class="btn-danger" id="stopBtn" onclick="stop()" disabled>⏹️ Stop</button>
 
             <!-- Progress -->
@@ -485,6 +546,8 @@
         let shouldStop = false;
         let selectedEmoji = '👍';
         let stats = { success: 0, fail: 0, total: 0 };
+        let extractedMsgId = null;
+        let extractedChannel = null;
 
         function log(msg, type = 'info') {
             const el = document.getElementById('log');
@@ -502,6 +565,54 @@
             el.textContent = msg;
             el.style.display = 'block';
             setTimeout(() => el.style.display = 'none', 5000);
+        }
+
+        function extractMessageId() {
+            const link = document.getElementById('postLink').value.trim();
+            const info = document.getElementById('extractedInfo');
+            
+            if (!link) {
+                info.style.display = 'none';
+                extractedMsgId = null;
+                extractedChannel = null;
+                return;
+            }
+
+            // Pattern 1: https://t.me/channelname/123
+            let match = link.match(/t\.me\/([^\/]+)\/(\d+)/);
+            
+            // Pattern 2: https://t.me/c/1234567890/123 (private channel)
+            if (!match) {
+                match = link.match(/t\.me\/c\/(\d+)\/(\d+)/);
+                if (match) {
+                    extractedChannel = '-100' + match[1];
+                    extractedMsgId = match[2];
+                }
+            } else {
+                extractedChannel = '@' + match[1];
+                extractedMsgId = match[2];
+            }
+
+            if (extractedMsgId) {
+                document.getElementById('extractedChannel').textContent = extractedChannel;
+                document.getElementById('extractedMsgId').textContent = extractedMsgId;
+                info.style.display = 'block';
+                log(`Extracted: Channel=${extractedChannel}, MsgID=${extractedMsgId}`, 'success');
+            } else {
+                info.style.display = 'none';
+                extractedMsgId = null;
+            }
+        }
+
+        function updateMethodUI() {
+            const method = document.querySelector('input[name="method"]:checked').value;
+            const postLinkGroup = document.getElementById('postLinkGroup');
+            
+            if (method === 'reactions') {
+                postLinkGroup.style.display = 'block';
+            } else {
+                postLinkGroup.style.display = 'none';
+            }
         }
 
         async function connectBot() {
@@ -532,6 +643,7 @@
 
                 showMsg('Connected successfully!');
                 log('Connected: ' + data.result.first_name, 'success');
+                updateMethodUI();
             } catch (e) {
                 showMsg('Connection failed: ' + e.message, true);
                 log('Failed: ' + e.message, 'error');
@@ -566,15 +678,14 @@
             const count = parseInt(document.getElementById('count').value);
             const delay = parseInt(document.getElementById('delay').value);
             const method = document.querySelector('input[name="method"]:checked').value;
-            const msgId = document.getElementById('messageId').value;
 
             if (!count || count < 1) {
                 showMsg('Enter valid count', true);
                 return;
             }
 
-            if (method === 'reactions' && !msgId) {
-                showMsg('Message ID required for reactions method', true);
+            if (method === 'reactions' && !extractedMsgId) {
+                showMsg('Please enter a valid post link', true);
                 return;
             }
 
@@ -588,7 +699,7 @@
             document.getElementById('statusBadge').className = 'status running';
             document.getElementById('statusBadge').textContent = 'Running';
 
-            log(`Starting ${count} actions via ${method} method`, 'info');
+            log(`Starting ${count} ${method === 'views' ? 'engagement boosts' : 'reactions'}`, 'info');
             showMsg(`Starting ${count} actions...`);
 
             for (let i = 0; i < count; i++) {
@@ -601,7 +712,7 @@
                     if (method === 'views') {
                         await sendView();
                     } else {
-                        await sendReaction(msgId);
+                        await sendReaction();
                     }
                     stats.success++;
                 } catch (e) {
@@ -617,8 +728,7 @@
         }
 
         async function sendView() {
-            // Send a simple message to boost engagement
-            const text = '👍'; // Simple emoji
+            const text = '👍';
             const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -631,7 +741,6 @@
             const data = await res.json();
             if (!data.ok) throw new Error(data.description);
             
-            // Delete message immediately to keep channel clean
             if (data.result.message_id) {
                 await fetch(`https://api.telegram.org/bot${token}/deleteMessage`, {
                     method: 'POST',
@@ -644,13 +753,14 @@
             }
         }
 
-        async function sendReaction(msgId) {
+        async function sendReaction() {
+            const targetChannel = extractedChannel || channel;
             const res = await fetch(`https://api.telegram.org/bot${token}/setMessageReaction`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    chat_id: channel,
-                    message_id: parseInt(msgId),
+                    chat_id: targetChannel,
+                    message_id: parseInt(extractedMsgId),
                     reaction: [{ type: 'emoji', emoji: selectedEmoji }],
                     is_big: false
                 })
@@ -692,6 +802,7 @@
         }
 
         log('Ready. Connect your bot to start.', 'info');
+        updateMethodUI();
     </script>
 </body>
 </html>
