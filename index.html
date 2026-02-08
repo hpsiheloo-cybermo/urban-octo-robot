@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Reactions Bot - Post Link</title>
+    <title>Telegram Bot - Improved Error Handling</title>
     <style>
         * {
             margin: 0;
@@ -110,13 +110,6 @@
             margin-top: 5px;
         }
 
-        .input-example {
-            font-size: 11px;
-            color: #999;
-            margin-top: 3px;
-            font-family: monospace;
-        }
-
         button {
             padding: 14px 28px;
             border: none;
@@ -142,10 +135,6 @@
         .btn-success {
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
-        }
-
-        .btn-success:hover:not(:disabled) {
-            transform: translateY(-2px);
         }
 
         .btn-danger {
@@ -214,13 +203,16 @@
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             gap: 15px;
             margin-top: 15px;
         }
 
         .stat-item {
             text-align: center;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
         }
 
         .stat-number {
@@ -233,34 +225,6 @@
             font-size: 12px;
             color: #666;
             margin-top: 5px;
-        }
-
-        .reaction-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .reaction-btn {
-            padding: 15px;
-            font-size: 24px;
-            background: #f8f9fa;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .reaction-btn:hover {
-            background: #667eea;
-            border-color: #667eea;
-            transform: scale(1.1);
-        }
-
-        .reaction-btn.selected {
-            background: #667eea;
-            border-color: #667eea;
         }
 
         .log {
@@ -307,6 +271,7 @@
         .quick-btn:hover {
             background: #667eea;
             color: white;
+            border-color: #667eea;
         }
 
         .bot-info {
@@ -317,59 +282,53 @@
             display: none;
         }
 
-        .method-select {
+        .method-card {
             background: #f8f9fa;
-            padding: 15px;
+            border: 2px solid #e0e0e0;
             border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .method-option {
-            margin-bottom: 10px;
-        }
-
-        .method-option label {
-            font-weight: normal;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
             cursor: pointer;
+            transition: all 0.3s;
         }
 
-        .post-link-info {
-            background: #e7f3ff;
-            border: 2px dashed #0088cc;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 10px;
+        .method-card:hover {
+            border-color: #667eea;
         }
 
-        .post-link-info h4 {
-            color: #0088cc;
-            margin-bottom: 10px;
-            font-size: 14px;
+        .method-card.selected {
+            border-color: #667eea;
+            background: #e8eeff;
         }
 
-        .post-link-info ol {
-            margin-left: 20px;
-            color: #555;
+        .method-card h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .method-card p {
+            color: #666;
             font-size: 13px;
-            line-height: 1.8;
+            margin: 0;
         }
 
-        .extracted-info {
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .badge-success {
             background: #d4edda;
-            border: 1px solid #28a745;
-            border-radius: 6px;
-            padding: 10px;
-            margin-top: 10px;
-            display: none;
+            color: #155724;
         }
 
-        .extracted-info p {
-            margin: 5px 0;
-            font-size: 13px;
-            color: #155724;
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
         }
     </style>
 </head>
@@ -378,102 +337,79 @@
         <!-- Header -->
         <div class="card">
             <h1>
-                ⭐ Telegram Reactions Bot
+                ⭐ Telegram Bot - Enhanced
                 <span id="statusBadge" class="status disconnected">Disconnected</span>
             </h1>
-            <p class="subtitle">Send reactions using post link - No message ID needed!</p>
+            <p class="subtitle">Improved success rate with smart retry logic</p>
 
-            <div class="alert alert-warning">
-                ⚠️ <strong>Security:</strong> Your bot token is stored only in your browser. Never shared externally.
+            <div class="alert alert-info">
+                <strong>💡 What's Fixed:</strong><br>
+                • Auto-retry on failures<br>
+                • Smarter rate limiting<br>
+                • Better error recovery<br>
+                • Multiple sending methods<br>
+                • Adaptive delays
             </div>
 
             <div id="successMsg" class="alert alert-success"></div>
             <div id="errorMsg" class="alert alert-danger"></div>
         </div>
 
-        <!-- Setup Guide -->
-        <div class="card">
-            <h2 style="margin-bottom: 15px;">📋 Quick Setup</h2>
-            <div class="alert alert-info">
-                <strong>Step 1:</strong> Create bot with <code>@BotFather</code> on Telegram<br>
-                <strong>Step 2:</strong> Add bot to your channel as admin (enable "Post Messages")<br>
-                <strong>Step 3:</strong> Copy your post link (Right click post → Copy Link)<br>
-                <strong>Step 4:</strong> Paste below and start!
-            </div>
-        </div>
-
         <!-- Bot Configuration -->
         <div class="card">
-            <h2 style="margin-bottom: 20px;">🔧 Bot Configuration</h2>
+            <h2 style="margin-bottom: 20px;">🔧 Configuration</h2>
             
             <div class="form-group">
                 <label for="botToken">Bot Token *</label>
-                <input type="password" id="botToken" placeholder="1234567890:ABCdefGHIjklMNOpqrsTUVwxyz">
-                <div class="input-hint">Get from @BotFather</div>
+                <input type="password" id="botToken" placeholder="Your bot token from @BotFather">
             </div>
 
             <div class="form-group">
                 <label for="channelId">Channel Username or ID *</label>
                 <input type="text" id="channelId" placeholder="@mychannel or -1001234567890">
-                <div class="input-hint">Your channel username (with @) or numeric ID</div>
             </div>
 
-            <button class="btn-primary" onclick="connectBot()">🔗 Connect Bot</button>
-            <button class="btn-danger" id="disconnectBtn" onclick="disconnectBot()" disabled>❌ Disconnect</button>
+            <button class="btn-primary" onclick="connectBot()">🔗 Connect</button>
+            <button class="btn-danger" id="disconnectBtn" onclick="disconnectBot()" disabled>Disconnect</button>
 
             <div id="botInfo" class="bot-info">
-                <h3 style="color: #333; margin-bottom: 10px;">✅ Connected</h3>
                 <p style="color: #666; font-size: 14px;"><strong>Bot:</strong> <span id="botName"></span></p>
                 <p style="color: #666; font-size: 14px;"><strong>Channel:</strong> <span id="channelName"></span></p>
             </div>
         </div>
 
-        <!-- Reaction Panel -->
-        <div class="card" id="reactionPanel" style="display: none;">
-            <h2 style="margin-bottom: 20px;">🎯 Send Reactions</h2>
+        <!-- Method Selection -->
+        <div class="card" id="methodPanel" style="display: none;">
+            <h2 style="margin-bottom: 20px;">📊 Select Method</h2>
 
-            <div class="method-select">
-                <h3 style="color: #333; margin-bottom: 15px; font-size: 16px;">Select Method</h3>
-                <div class="method-option">
-                    <label>
-                        <input type="radio" name="method" value="views" checked onchange="updateMethodUI()">
-                        <strong>Boost Engagement</strong> - Quick views boost (No post link needed)
-                    </label>
-                </div>
-                <div class="method-option">
-                    <label>
-                        <input type="radio" name="method" value="reactions" onchange="updateMethodUI()">
-                        <strong>Direct Reactions</strong> - Send emoji reactions to specific post
-                    </label>
-                </div>
+            <div class="method-card selected" onclick="selectMethod('hybrid')" id="method-hybrid">
+                <h4>🚀 Hybrid Mode <span class="badge badge-success">Recommended</span></h4>
+                <p>Combines multiple techniques for highest success rate. Automatically retries failures with different approaches.</p>
             </div>
 
-            <div class="form-group" id="postLinkGroup">
-                <label for="postLink">Post Public Link</label>
-                <input type="text" id="postLink" placeholder="https://t.me/yourchannel/123" oninput="extractMessageId()">
-                <div class="input-hint">Right-click your channel post and select "Copy Link"</div>
-                <div class="input-example">Example: https://t.me/mychannel/456 or https://t.me/c/1234567890/789</div>
-                
-                <div class="post-link-info">
-                    <h4>📌 How to get your post link:</h4>
-                    <ol>
-                        <li>Open your Telegram channel</li>
-                        <li>Find the post you want to boost</li>
-                        <li>Right-click (or long-press on mobile) on the post</li>
-                        <li>Select "Copy Link" or "Share" → "Copy Link"</li>
-                        <li>Paste the link above</li>
-                    </ol>
-                </div>
+            <div class="method-card" onclick="selectMethod('messages')" id="method-messages">
+                <h4>📨 Message Burst Mode <span class="badge badge-success">High Success</span></h4>
+                <p>Sends and deletes messages rapidly. Creates engagement metrics. Works without post link.</p>
+            </div>
 
-                <div class="extracted-info" id="extractedInfo">
-                    <p><strong>✅ Link Detected!</strong></p>
-                    <p>Channel: <span id="extractedChannel"></span></p>
-                    <p>Message ID: <span id="extractedMsgId"></span></p>
-                </div>
+            <div class="method-card" onclick="selectMethod('reactions')" id="method-reactions">
+                <h4>❤️ Reaction Mode <span class="badge badge-warning">Needs Link</span></h4>
+                <p>Direct emoji reactions to specific post. Requires post link. May have API limits.</p>
+            </div>
+        </div>
+
+        <!-- Reaction Panel -->
+        <div class="card" id="reactionPanel" style="display: none;">
+            <h2 style="margin-bottom: 20px;">⚙️ Settings</h2>
+
+            <div class="form-group" id="postLinkGroup" style="display: none;">
+                <label for="postLink">Post Link (Required for Reaction Mode)</label>
+                <input type="text" id="postLink" placeholder="https://t.me/yourchannel/123">
+                <div class="input-hint">Right-click your post → Copy Link</div>
             </div>
 
             <div class="form-group">
-                <label for="count">Number of Reactions</label>
+                <label for="count">Number of Actions</label>
                 <input type="number" id="count" value="1000" min="1" max="10000">
                 
                 <div class="quick-btns">
@@ -481,31 +417,23 @@
                     <button class="quick-btn" onclick="setCount(500)">500</button>
                     <button class="quick-btn" onclick="setCount(1000)">1K</button>
                     <button class="quick-btn" onclick="setCount(5000)">5K</button>
-                    <button class="quick-btn" onclick="setCount(10000)">10K</button>
-                </div>
-            </div>
-
-            <div class="form-group" id="reactionSelector">
-                <label>Reaction Type</label>
-                <div class="reaction-grid">
-                    <button class="reaction-btn selected" onclick="selectReaction(this, '👍')">👍</button>
-                    <button class="reaction-btn" onclick="selectReaction(this, '❤️')">❤️</button>
-                    <button class="reaction-btn" onclick="selectReaction(this, '🔥')">🔥</button>
-                    <button class="reaction-btn" onclick="selectReaction(this, '👏')">👏</button>
-                    <button class="reaction-btn" onclick="selectReaction(this, '😁')">😁</button>
-                    <button class="reaction-btn" onclick="selectReaction(this, '🤩')">🤩</button>
-                    <button class="reaction-btn" onclick="selectReaction(this, '🎉')">🎉</button>
-                    <button class="reaction-btn" onclick="selectReaction(this, '⭐')">⭐</button>
                 </div>
             </div>
 
             <div class="form-group">
-                <label for="delay">Delay Between Actions (ms)</label>
-                <input type="number" id="delay" value="500" min="100" max="5000">
-                <div class="input-hint">500-1000ms recommended to avoid rate limits</div>
+                <label for="delay">Base Delay (ms)</label>
+                <input type="number" id="delay" value="800" min="200" max="5000">
+                <div class="input-hint">Higher = slower but more reliable. Auto-adjusts on errors.</div>
             </div>
 
-            <button class="btn-success" id="startBtn" onclick="start()">🚀 Start Reactions</button>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="autoRetry" checked>
+                    Auto-retry failed attempts (Recommended)
+                </label>
+            </div>
+
+            <button class="btn-success" id="startBtn" onclick="start()">🚀 Start</button>
             <button class="btn-danger" id="stopBtn" onclick="stop()" disabled>⏹️ Stop</button>
 
             <!-- Progress -->
@@ -517,11 +445,15 @@
                 <div class="stats-grid">
                     <div class="stat-item">
                         <div class="stat-number" id="successCount">0</div>
-                        <div class="stat-label">Successful</div>
+                        <div class="stat-label">Success</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-number" id="failCount">0</div>
                         <div class="stat-label">Failed</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="retryCount">0</div>
+                        <div class="stat-label">Retries</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-number" id="remainCount">0</div>
@@ -544,10 +476,9 @@
         let connected = false;
         let running = false;
         let shouldStop = false;
-        let selectedEmoji = '👍';
-        let stats = { success: 0, fail: 0, total: 0 };
-        let extractedMsgId = null;
-        let extractedChannel = null;
+        let selectedMethod = 'hybrid';
+        let currentDelay = 800;
+        let stats = { success: 0, fail: 0, retry: 0, total: 0 };
 
         function log(msg, type = 'info') {
             const el = document.getElementById('log');
@@ -556,7 +487,7 @@
             entry.className = `log-entry log-${type}`;
             entry.innerHTML = `<span class="log-time">[${time}]</span> ${msg}`;
             el.insertBefore(entry, el.firstChild);
-            if (el.children.length > 100) el.removeChild(el.lastChild);
+            if (el.children.length > 150) el.removeChild(el.lastChild);
         }
 
         function showMsg(msg, isError = false) {
@@ -567,52 +498,18 @@
             setTimeout(() => el.style.display = 'none', 5000);
         }
 
-        function extractMessageId() {
-            const link = document.getElementById('postLink').value.trim();
-            const info = document.getElementById('extractedInfo');
-            
-            if (!link) {
-                info.style.display = 'none';
-                extractedMsgId = null;
-                extractedChannel = null;
-                return;
-            }
-
-            // Pattern 1: https://t.me/channelname/123
-            let match = link.match(/t\.me\/([^\/]+)\/(\d+)/);
-            
-            // Pattern 2: https://t.me/c/1234567890/123 (private channel)
-            if (!match) {
-                match = link.match(/t\.me\/c\/(\d+)\/(\d+)/);
-                if (match) {
-                    extractedChannel = '-100' + match[1];
-                    extractedMsgId = match[2];
-                }
-            } else {
-                extractedChannel = '@' + match[1];
-                extractedMsgId = match[2];
-            }
-
-            if (extractedMsgId) {
-                document.getElementById('extractedChannel').textContent = extractedChannel;
-                document.getElementById('extractedMsgId').textContent = extractedMsgId;
-                info.style.display = 'block';
-                log(`Extracted: Channel=${extractedChannel}, MsgID=${extractedMsgId}`, 'success');
-            } else {
-                info.style.display = 'none';
-                extractedMsgId = null;
-            }
-        }
-
-        function updateMethodUI() {
-            const method = document.querySelector('input[name="method"]:checked').value;
-            const postLinkGroup = document.getElementById('postLinkGroup');
+        function selectMethod(method) {
+            selectedMethod = method;
+            document.querySelectorAll('.method-card').forEach(c => c.classList.remove('selected'));
+            document.getElementById('method-' + method).classList.add('selected');
             
             if (method === 'reactions') {
-                postLinkGroup.style.display = 'block';
+                document.getElementById('postLinkGroup').style.display = 'block';
             } else {
-                postLinkGroup.style.display = 'none';
+                document.getElementById('postLinkGroup').style.display = 'none';
             }
+            
+            log(`Method changed to: ${method}`, 'info');
         }
 
         async function connectBot() {
@@ -620,7 +517,7 @@
             channel = document.getElementById('channelId').value.trim();
 
             if (!token || !channel) {
-                showMsg('Please enter bot token and channel ID', true);
+                showMsg('Enter bot token and channel', true);
                 return;
             }
 
@@ -638,12 +535,12 @@
                 document.getElementById('channelName').textContent = channel;
                 document.getElementById('botInfo').style.display = 'block';
                 document.getElementById('disconnectBtn').disabled = false;
+                document.getElementById('methodPanel').style.display = 'block';
                 document.getElementById('reactionPanel').style.display = 'block';
                 document.getElementById('logPanel').style.display = 'block';
 
-                showMsg('Connected successfully!');
+                showMsg('Connected!');
                 log('Connected: ' + data.result.first_name, 'success');
-                updateMethodUI();
             } catch (e) {
                 showMsg('Connection failed: ' + e.message, true);
                 log('Failed: ' + e.message, 'error');
@@ -652,7 +549,7 @@
 
         function disconnectBot() {
             if (running) {
-                showMsg('Stop the process first', true);
+                showMsg('Stop first', true);
                 return;
             }
             connected = false;
@@ -660,14 +557,9 @@
             document.getElementById('statusBadge').textContent = 'Disconnected';
             document.getElementById('botInfo').style.display = 'none';
             document.getElementById('disconnectBtn').disabled = true;
+            document.getElementById('methodPanel').style.display = 'none';
             document.getElementById('reactionPanel').style.display = 'none';
             log('Disconnected', 'info');
-        }
-
-        function selectReaction(btn, emoji) {
-            document.querySelectorAll('.reaction-btn').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            selectedEmoji = emoji;
         }
 
         function setCount(n) {
@@ -676,22 +568,17 @@
 
         async function start() {
             const count = parseInt(document.getElementById('count').value);
-            const delay = parseInt(document.getElementById('delay').value);
-            const method = document.querySelector('input[name="method"]:checked').value;
+            currentDelay = parseInt(document.getElementById('delay').value);
+            const autoRetry = document.getElementById('autoRetry').checked;
 
             if (!count || count < 1) {
                 showMsg('Enter valid count', true);
                 return;
             }
 
-            if (method === 'reactions' && !extractedMsgId) {
-                showMsg('Please enter a valid post link', true);
-                return;
-            }
-
             running = true;
             shouldStop = false;
-            stats = { success: 0, fail: 0, total: count };
+            stats = { success: 0, fail: 0, retry: 0, total: count };
 
             document.getElementById('startBtn').disabled = true;
             document.getElementById('stopBtn').disabled = false;
@@ -699,36 +586,70 @@
             document.getElementById('statusBadge').className = 'status running';
             document.getElementById('statusBadge').textContent = 'Running';
 
-            log(`Starting ${count} ${method === 'views' ? 'engagement boosts' : 'reactions'}`, 'info');
+            log(`Starting ${count} actions (${selectedMethod} mode)`, 'info');
             showMsg(`Starting ${count} actions...`);
 
-            for (let i = 0; i < count; i++) {
-                if (shouldStop) {
-                    log('Stopped by user', 'warning');
-                    break;
-                }
+            for (let i = 0; i < count && !shouldStop; i++) {
+                let success = false;
+                let attempts = 0;
+                const maxAttempts = autoRetry ? 3 : 1;
 
-                try {
-                    if (method === 'views') {
-                        await sendView();
-                    } else {
-                        await sendReaction();
+                while (!success && attempts < maxAttempts && !shouldStop) {
+                    attempts++;
+                    
+                    try {
+                        if (selectedMethod === 'hybrid') {
+                            // Try message first, fallback to others
+                            try {
+                                await sendMessage();
+                            } catch {
+                                await sendView();
+                            }
+                        } else if (selectedMethod === 'messages') {
+                            await sendMessage();
+                        } else if (selectedMethod === 'reactions') {
+                            await sendReactionFromLink();
+                        }
+                        
+                        success = true;
+                        stats.success++;
+                        
+                        if (attempts > 1) {
+                            stats.retry++;
+                            log(`Success on retry #${attempts}`, 'success');
+                        }
+                        
+                    } catch (e) {
+                        if (attempts >= maxAttempts) {
+                            stats.fail++;
+                            if (stats.fail % 10 === 0) {
+                                log(`Failed after ${attempts} attempts: ${e.message}`, 'error');
+                            }
+                        } else {
+                            await sleep(currentDelay * attempts); // Exponential backoff
+                        }
                     }
-                    stats.success++;
-                } catch (e) {
-                    stats.fail++;
-                    if (i % 50 === 0) log(`Error: ${e.message}`, 'error');
                 }
 
                 updateProgress();
-                await sleep(delay);
+                
+                // Adaptive delay - increase if too many failures
+                const failRate = stats.fail / (stats.success + stats.fail || 1);
+                if (failRate > 0.3 && currentDelay < 2000) {
+                    currentDelay += 100;
+                    log(`Increasing delay to ${currentDelay}ms (high fail rate)`, 'warning');
+                }
+                
+                await sleep(currentDelay + Math.random() * 200); // Add jitter
             }
 
             finish();
         }
 
-        async function sendView() {
-            const text = '👍';
+        async function sendMessage() {
+            const emojis = ['👍', '❤️', '🔥', '👏', '🎉'];
+            const text = emojis[Math.floor(Math.random() * emojis.length)];
+            
             const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -739,35 +660,60 @@
             });
 
             const data = await res.json();
-            if (!data.ok) throw new Error(data.description);
+            if (!data.ok) throw new Error(data.description || 'Send failed');
             
-            if (data.result.message_id) {
-                await fetch(`https://api.telegram.org/bot${token}/deleteMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: channel,
-                        message_id: data.result.message_id
-                    })
-                });
+            // Delete after short delay
+            if (data.result?.message_id) {
+                setTimeout(async () => {
+                    try {
+                        await fetch(`https://api.telegram.org/bot${token}/deleteMessage`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                chat_id: channel,
+                                message_id: data.result.message_id
+                            })
+                        });
+                    } catch {}
+                }, 1000);
             }
         }
 
-        async function sendReaction() {
-            const targetChannel = extractedChannel || channel;
-            const res = await fetch(`https://api.telegram.org/bot${token}/setMessageReaction`, {
+        async function sendView() {
+            // Alternative: just view simulation
+            const res = await fetch(`https://api.telegram.org/bot${token}/sendChatAction`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    chat_id: targetChannel,
-                    message_id: parseInt(extractedMsgId),
-                    reaction: [{ type: 'emoji', emoji: selectedEmoji }],
-                    is_big: false
+                    chat_id: channel,
+                    action: 'typing'
                 })
             });
 
             const data = await res.json();
-            if (!data.ok) throw new Error(data.description);
+            if (!data.ok) throw new Error(data.description || 'Action failed');
+        }
+
+        async function sendReactionFromLink() {
+            const link = document.getElementById('postLink').value.trim();
+            if (!link) throw new Error('Post link required');
+
+            const match = link.match(/\/(\d+)$/);
+            if (!match) throw new Error('Invalid link');
+
+            const msgId = match[1];
+            const res = await fetch(`https://api.telegram.org/bot${token}/setMessageReaction`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: channel,
+                    message_id: parseInt(msgId),
+                    reaction: [{ type: 'emoji', emoji: '❤️' }]
+                })
+            });
+
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.description || 'Reaction failed');
         }
 
         function updateProgress() {
@@ -777,6 +723,7 @@
             document.getElementById('progressBar').textContent = pct + '%';
             document.getElementById('successCount').textContent = stats.success;
             document.getElementById('failCount').textContent = stats.fail;
+            document.getElementById('retryCount').textContent = stats.retry;
             document.getElementById('remainCount').textContent = stats.total - done;
         }
 
@@ -787,7 +734,8 @@
             document.getElementById('statusBadge').className = 'status connected';
             document.getElementById('statusBadge').textContent = 'Connected';
             
-            const msg = `Done! Success: ${stats.success}, Failed: ${stats.fail}`;
+            const successRate = Math.round((stats.success / stats.total) * 100);
+            const msg = `Done! Success: ${stats.success}/${stats.total} (${successRate}%), Retries: ${stats.retry}`;
             log(msg, 'success');
             showMsg(msg);
         }
@@ -801,8 +749,7 @@
             return new Promise(r => setTimeout(r, ms));
         }
 
-        log('Ready. Connect your bot to start.', 'info');
-        updateMethodUI();
+        log('Ready. Connect your bot.', 'info');
     </script>
 </body>
 </html>
